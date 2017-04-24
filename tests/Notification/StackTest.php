@@ -34,7 +34,6 @@
          */
         public function testMessageFiltering($messages, $filter, $expected)
         {
-
             $notifications = new Notification\Stack();
 
             foreach($messages as $message)
@@ -43,7 +42,6 @@
             }
 
             $this->assertEquals($expected, $notifications->for($filter)->count());
-
         }
 
 
@@ -60,5 +58,32 @@
             $this->assertEquals(3, $notifications->count('info'));
             $this->assertEquals(1, $notifications->count('danger'));
 
+            $nestedNotifications = new Notification\Stack();
+            $nestedNotifications->addMessage(uniqid(), new Notification\Info(uniqid()));
+            $this->assertEquals(0, $nestedNotifications->count('danger'));
+
+            $nestedNotifications->addMessage(uniqid(), $notifications);
+
+            $this->assertEquals(4, $nestedNotifications->count('info'));
+            $this->assertEquals(1, $notifications->count('danger'));
+        }
+
+        public function testStackHasError()
+        {
+            $notifications = new Notification\Stack();
+
+            $notifications->addMessage(uniqid(), new Notification\Info(uniqid()));
+            $notifications->addMessage(uniqid(), new Notification\Info(uniqid()));
+            $this->assertFalse($notifications->hasError());
+
+            $notifications->addMessage(uniqid(), new Notification\Alert(uniqid()));
+            $this->assertTrue($notifications->hasError());
+
+            $nestedNotifications = new Notification\Stack();
+            $nestedNotifications->addMessage(uniqid(), new Notification\Info(uniqid()));
+            $this->assertFalse($nestedNotifications->hasError());
+
+            $nestedNotifications->addMessage(uniqid(), $notifications);
+            $this->assertTrue($nestedNotifications->hasError());
         }
     }
