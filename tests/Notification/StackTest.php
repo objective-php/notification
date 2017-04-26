@@ -86,4 +86,17 @@
             $nestedNotifications->addMessage(uniqid(), $notifications);
             $this->assertTrue($nestedNotifications->hasError());
         }
+        
+        public function testMessageStacking()
+        {
+            $notifications = new Notification\Stack();
+            
+            $notifications->addMessage('test', $first = new Notification\Info('first info'));
+            $notifications->addMessage('test', $second = new Notification\Info('second info'));
+            
+            $this->assertInstanceOf(Notification\Stack::class, $notifications->get('test'));
+            $this->assertSame($first, $notifications->get('test')[0]);
+            $this->assertSame($second, $notifications->get('test')[1]);
+            
+        }
     }
