@@ -95,22 +95,22 @@ class Stack extends Collection implements MessageInterface
     }
     
     /**
-     * @param string|null $type
+     * @param string|null $filter
      *
      * @return int
      * @throws \ObjectivePHP\Primitives\Exception
      */
-    public function count($type = null)
+    public function count($filter= null)
     {
-        if (is_null($type)) {
+        if (is_null($filter)) {
             $count = parent::count();
         } else {
             $count = 0;
             $this->each(
-                function (MessageInterface $message) use (&$count, $type) {
+                function (MessageInterface $message) use (&$count, $filter) {
                     if ($message instanceof Stack) {
-                        $count += $message->count($type);
-                    } elseif ($type == $message->getType()) {
+                        $count += $message->count($filter);
+                    } elseif ($this->getMatcher()->match($filter, $message->getType())) {
                         $count++;
                     }
                 }
@@ -144,4 +144,5 @@ class Stack extends Collection implements MessageInterface
         
         return false;
     }
+    
 }

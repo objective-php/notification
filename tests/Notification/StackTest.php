@@ -57,6 +57,7 @@
 
             $this->assertEquals(3, $notifications->count('info'));
             $this->assertEquals(1, $notifications->count('danger'));
+            $this->assertEquals(4, $notifications->count('[info|danger]'));
 
             $nestedNotifications = new Notification\Stack();
             $nestedNotifications->addMessage(uniqid(), new Notification\Info(uniqid()));
