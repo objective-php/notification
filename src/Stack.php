@@ -2,16 +2,17 @@
 
 namespace ObjectivePHP\Notification;
 
-
 use ObjectivePHP\Matcher\Matcher;
 use ObjectivePHP\Primitives\Collection\Collection;
 
-class Stack extends Collection
+/**
+ * Class Stack
+ * @package ObjectivePHP\Notification
+ */
+class Stack extends Collection implements MessageInterface
 {
 
-    /**
-     * @var Matcher
-     */
+    /** @var Matcher $matcher */
     protected $matcher;
 
     /**
@@ -24,10 +25,26 @@ class Stack extends Collection
         parent::__construct($messages);
 
         $this->restrictTo(MessageInterface::class);
-
     }
 
     /**
+     * Reduce the Stack with a filter.
+     **
+     * @param $filter
+     *
+     * @return Stack
+     * @throws \ObjectivePHP\Primitives\Exception
+     */
+    public function for($filter)
+    {
+        return (clone $this)->filter(function($value, $key) use($filter) {
+            return $this->getMatcher()->match($filter, $key);
+        });
+    }
+
+    /**
+     * Add a Message to the Stack.
+     *
      * @param string           $key
      * @param MessageInterface $message
      *
@@ -59,7 +76,8 @@ class Stack extends Collection
             $this->each(
                 function (MessageInterface $message) use (&$count, $type)
                 {
-                    if($type == $message->getType()) $count ++;
+                    if ($message instanceof Stack) $count += $message->count($type);
+                    elseif ($type == $message->getType()) $count ++;
                 }
             );
         }
@@ -67,22 +85,27 @@ class Stack extends Collection
         return $count;
     }
 
-    /**
-     * @param $filter
-     */
-    public function for($filter)
+    public function hasError()
     {
-        return (clone $this)->filter(function($value, $key) use($filter) {
-            return $this->getMatcher()->match($filter, $key);
-        });
+        foreach ($this->getInternalValue() as $message) {
+            if ($message->isError()) {
+                return true;
+            }
+        }
+        return false;
     }
+
+    public function isError(): bool
+    {
+        return $this->hasError();
+    }
+
 
     /**
      * @return Matcher
      */
     public function getMatcher()
     {
-
         if(is_null($this->matcher))
         {
             $this->matcher = new Matcher();
@@ -99,8 +122,6 @@ class Stack extends Collection
     public function setMatcher(Matcher $matcher)
     {
         $this->matcher = $matcher;
-
         return $this;
     }
-
 }

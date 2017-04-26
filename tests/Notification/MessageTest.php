@@ -35,4 +35,13 @@ class MessageTest extends TestCase
 
     }
 
+    public function testMessageIsError()
+    {
+        $this->assertTrue((new Notification\Alert('By default an alert message is an error.'))->isError());
+        $this->assertTrue((new Notification\Warning('By default a warning message is an error.'))->isError());
+        $this->assertFalse((new Notification\Info('By default an info message isn\'t an error.'))->isError());
+        $this->assertFalse((new Notification\Success('By default a success message isn\'t an error.'))->isError());
+
+        $this->assertFalse((new Notification\Alert('The error behavior can be override.'))->setError(false)->isError());
+    }
 }
